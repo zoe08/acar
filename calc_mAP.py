@@ -64,23 +64,23 @@ def read_csv(csv_file, class_whitelist=None, capacity=0):
     scores = defaultdict(list)
     reader = csv.reader(csv_file)
     for row in reader:
-        print(row)
-        assert len(row) in [9], "Wrong number of columns: " + row
-        if len(row) in [9]:
-            image_key = make_image_key(row[0], row[1])
-            x1, y1, x2, y2 = [float(n) for n in row[2:6]]
-            action_id = int(row[6])
-            if class_whitelist and action_id not in class_whitelist:
-                continue
-            score = 1.0
-            if len(row) == 8:
-                score = float(row[7])
-            if capacity < 1 or len(entries[image_key]) < capacity:
-                heapq.heappush(entries[image_key],
-                               (score, action_id, y1, x1, y2, x2))
-            elif score > entries[image_key][0][0]:
-                heapq.heapreplace(entries[image_key],
-                                  (score, action_id, y1, x1, y2, x2))
+        # print(row)
+        assert len(row) in [8, 9], "Wrong number of columns: " + row
+
+        image_key = make_image_key(row[0], int(float(row[1])))
+        x1, y1, x2, y2 = [float(n) for n in row[2:6]]
+        action_id = int(row[6])
+        if class_whitelist and action_id not in class_whitelist:
+            continue
+        score = 1.0
+        if len(row) == 8:
+            score = float(row[7])
+        if capacity < 1 or len(entries[image_key]) < capacity:
+            heapq.heappush(entries[image_key],
+                           (score, action_id, y1, x1, y2, x2))
+        elif score > entries[image_key][0][0]:
+            heapq.heapreplace(entries[image_key],
+                              (score, action_id, y1, x1, y2, x2))
     for image_key in entries:
         # Evaluation API assumes boxes with descending scores
         entry = sorted(entries[image_key], key=lambda tup: -tup[0])
